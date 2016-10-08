@@ -1,0 +1,45 @@
+---
+title: "Baltimore Housing Improvements"
+output: html_document
+date: 2016-Oct-8
+author: Itnava
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r libraries, include= FALSE,echo=FALSE}
+library(dplyr)
+library(leaflet)
+```
+## Permits from 2002 to 2016
+
+This map shows the locations that were issued for housing repair and renovations in the city of Baltimore. 
+Once we zoom to individual permits, they are color coded based on the estimated cost submitted with the permit application.
+
+```{r mapping, include=FALSE, echo=FALSE}
+setwd("~/Coursera/DevelopingDataProducts/week2/")
+df <- read.csv("Housing_Permits.csv")
+df <- subset(df, select=-c(PermitDescription))
+df$DateIssue <- as.Date(df$DateIssue, "%m/%d/%Y")
+df$DateExpire <- as.Date(df$DateExpire, "%m/%d/%Y")
+df <- na.omit(df)
+coords <- as.character(df$Location)
+longitude <- as.numeric(substring(coords, 14, 25))
+latitude <- as.numeric(substring(coords, 2, 12))
+df$Cost_Est <- as.numeric(substring(df$Cost_Est, 2))
+df$latitude <- latitude
+df$longitude <- longitude
+df <-na.omit(df)
+longitude <- df$longitude
+latitude <- df$latitude
+m <-leaflet(df) %>% addTiles() %>% addCircleMarkers(longitude, latitude, color = ~ifelse(Cost_Est > 10000, 'blue', 'red'), radius = 5, fillOpacity = 0.9, clusterOptions = markerClusterOptions()) %>% addLegend("topright", colors=c("red", "blue"), labels = c("< $10000", "> $10000"), opacity = 0.9,  title = "Cost Estimate")
+```
+
+```{r permitMap}
+m
+```
+
+
+
